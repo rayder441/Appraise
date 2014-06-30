@@ -51,8 +51,8 @@ def random_from_range(range_max, num_draws, tuple_size = 3, sequential = True):
     else:
         sentences = range(range_max)
         random.shuffle(sentences)
-
-        blocks = [tuple([sentences.pop(random.randint(0, len(sentences) - 1)) for x in range(tuple_size)]) for x in range(num_draws)]
+        sys.stderr.write(str(num_draws) + ' ' + str(len(sentences)))
+        blocks = [tuple([sentences.pop(random.randint(0, len(sentences) - 1)) for x in range(tuple_size) if len(sentences) > 0]) for x in range(num_draws)]
 
     return blocks
 
