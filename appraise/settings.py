@@ -18,6 +18,8 @@ except ImportError:
 
 TEMPLATE_DEBUG = DEBUG
 
+WSGI_APPLICATION = "appraise.wsgi.application"
+
 # Import local settings, this allows to set git binary and secret key.
 try:
     from random import choice
