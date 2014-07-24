@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Project: Appraise evaluation system
  Author: Christian Federmann <cfedermann@gmail.com>
@@ -22,7 +22,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
 from appraise.wmt14.models import LANGUAGE_PAIR_CHOICES, UserHITMapping, \
-  HIT, RankingTask, RankingResult, UserHITMapping, UserInviteToken
+  HIT, RankingTask, RankingResult, UserHITMapping, UserInviteToken, UserBlockAssignment
 from appraise.settings import LOG_LEVEL, LOG_HANDLER, COMMIT_TAG, ROOT_PATH
 from appraise.utils import datetime_to_seconds, seconds_to_timedelta
 
@@ -64,11 +64,14 @@ def _compute_next_task_for_user(user, language_pair):
     if not current_hitmap:
         LOGGER.debug('No current HIT for user {0}, fetching HIT.'.format(
           user))
+
+        # Changes by Spence: add block lookup
+        user_to_block = UserBlockAssignment.objects.get(user=user)
         
         # Compatible HIT instances need to match the given language pair!
         # Furthermore, they need to be active and not reserved for MTurk.
         hits = HIT.objects.filter(language_pair=language_pair, active=True,
-          mturk_only=False, completed=False)
+          mturk_only=False, completed=False,block_id=user_to_block.block_id)
         
         # Compute list of compatible block ids and randomise its order.
         #
@@ -938,6 +941,10 @@ def signup(request):
                     user.groups.add(eval_group)
                 
                 user.save()
+
+                # Associate a block with this user.
+                block = UserBlockAssignment.objects.create(user=user,block_id=invite.block_id)
+                block.save()
                 
                 # Disable invite token.
                 invite.active = False

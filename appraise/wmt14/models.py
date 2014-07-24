@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Project: Appraise evaluation system
  Author: Christian Federmann <cfedermann@gmail.com>
@@ -39,7 +39,16 @@ LANGUAGE_PAIR_CHOICES = (
   ('rus2eng', 'Russian → English'),
 )
 
+class UserBlockAssignment(models.Model):
+    """
+    Assign a user to a block.
+    """
+    user = models.ForeignKey(User)
+    block_id = models.IntegerField()
 
+    def __unicode__(self):
+        return '%s block %d' % (self.user.username,self.block_id)
+    
 # pylint: disable-msg=E1101
 class HIT(models.Model):
     """
@@ -711,6 +720,11 @@ class UserInviteToken(models.Model):
       default=True,
       help_text="Indicates that this invite can still be used.",
       verbose_name="Active?"
+    )
+
+    block_id = models.IntegerField(
+      help_text="The block id associated with this invite.",
+      verbose_name="Block id"
     )
 
     class Meta:

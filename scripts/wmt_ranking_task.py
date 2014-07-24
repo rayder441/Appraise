@@ -23,6 +23,7 @@ PARSER = argparse.ArgumentParser(description="Build evaluation task input file."
 PARSER.add_argument("source", type=file, help="source language file")
 PARSER.add_argument("reference", type=file, nargs="?", help="reference language file")
 PARSER.add_argument("system", metavar="system", nargs="*", type=file, help="parallel files to compare")
+PARSER.add_argument("-block",type=str,default="-1", help="Block id for this set of HITs")
 PARSER.add_argument("-id", type=str, default="none", help="ID name to use for the system name")
 PARSER.add_argument("-source", type=str, default="spa", dest="sourceLang", help="the source language")
 PARSER.add_argument("-target", type=str, default="eng", dest="targetLang", help="the target language")
@@ -153,7 +154,7 @@ if __name__ == "__main__":
                 tasks[random.randint(0, len(tasks)-1)] = controls.pop(random.randint(0,len(controls)-1))
 
         # sentnos_str = ",".join([`x.id` for x in tasks])
-        sentnos_str = "-1"
+        sentnos_str = args.block
         hit = '  <hit block-id="%s" source-language="%s" target-language="%s">' % (sentnos_str, args.sourceLang, args.targetLang)
         for task in tasks:
             hit += task.xml()

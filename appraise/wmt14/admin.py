@@ -11,7 +11,7 @@ from django.template import Context
 from django.template.loader import get_template
 
 from appraise.wmt14.models import HIT, RankingTask, RankingResult, \
-  UserHITMapping, UserInviteToken
+  UserHITMapping, UserInviteToken,UserBlockAssignment
 
 from appraise.settings import LOG_LEVEL, LOG_HANDLER
 
@@ -204,6 +204,7 @@ class UserInviteTokenAdmin(admin.ModelAdmin):
 
 admin.site.register(HIT, HITAdmin)
 admin.site.register(RankingTask)
+admin.site.register(UserBlockAssignment)
 admin.site.register(RankingResult, RankingResultAdmin)
 admin.site.register(UserHITMapping, UserHITMappingAdmin)
 admin.site.register(UserInviteToken, UserInviteTokenAdmin)

@@ -26,7 +26,7 @@ PARSER.add_argument("group_name", metavar="group-name", help="Name of the " \
   "user group the invites belong to.")
 PARSER.add_argument("number_of_tokens", metavar="number-of-tokens",
   help="Total number of invite tokens to generate.")
-
+PARSER.add_argument("-block",type=int, help="First block id")
 
 if __name__ == "__main__":
     args = PARSER.parse_args()
@@ -60,10 +60,14 @@ if __name__ == "__main__":
     
     # Generate user invite tokens.
     generated_tokens = []
+    increment_block = not args.block == None
+    block_id = args.block if args.block != None else -1
     for _ in range(number):
-        new_token = UserInviteToken(group=group)
+        new_token = UserInviteToken(group=group, block_id=block_id)
         new_token.save()
         generated_tokens.append(new_token.token)
+        if increment_block:
+            block_id += 1
     
     # Print user invite tokens to screen.
     for token in generated_tokens:
