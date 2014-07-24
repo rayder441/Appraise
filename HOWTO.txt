@@ -1,0 +1,34 @@
+###
+Changes to the public appraise documentation.
+###
+
+* Requires exactly Django 1.4. 1.5 fails for the templating language. 1.6 fails for differences in the manage.py implementation.
+* Requires nltk for the IAA code.
+* Setup the data according to the Appraise WMT14 notes.
+* To create HITS (be sure to set the block correctly):
+ ./scripts/wmt_ranking_task.py -block 0 -source fra -target eng -maxlen 10000 -redundancy 0 fren-data/sources/uist14fren-src.fr fren-data/references/uist14fren-ref.en fren-data/systems/uist14fren.fr-en.subject* > output.hits
+ cd appraise
+ python import_wmt14_xml.py --dry-run ../output.hits 
+ 2013  python import_wmt14_xml.py ../output.hits
+
+* Need to specify the language abbreviations for creating the HITS. Format is 
+ISO-639-3 language code. e.g. see wmt14.models
+LANGUAGE_PAIR_CHOICES = (
+  ('eng2ces', 'English → Czech'),
+  ('eng2deu', 'English → German'),
+  ('eng2fra', 'English → French'),
+  ('eng2hin', 'English → Hindi'),
+  ('eng2rus', 'English → Russian'),
+  ('ces2eng', 'Czech → English'),
+  ('deu2eng', 'German → English'),
+  ('fra2eng', 'French → English'),
+  ('hin2eng', 'Hindi → English'),
+  ('rus2eng', 'Russian → English'),
+)
+
+* How to add users (wmt14 app):
+ 1) Create (Auth) user groups in Django auth for LANGUAGE_PAIR_CHOICES above.
+ 2) Create an invite token for each user
+ 3) Have the user login, selecting target languages (e.g., English)
+ 4) Request that the user change his/her password because Appraise assigns a dummy password based on an MD5 of the group name (see ln.932 of wmt14.views)
+
