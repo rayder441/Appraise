@@ -28,7 +28,9 @@ LANGUAGE_PAIR_CHOICES = (
 
 * How to add users (wmt14 app):
  1) Create (Auth) user groups in Django auth for LANGUAGE_PAIR_CHOICES above.
- 2) Create an invite token for each user
+ 1.5) Create a group called "WMT14"
+ 2) Create an invite token for each user:
+   rayder441@ptm:~/sandbox/Appraise/appraise$ python create_wmt14_invites.py -block 0 WMT14 3 2>&1 > invites.txt
  3) Have the user login, selecting target languages (e.g., English)
  4) Request that the user change his/her password because Appraise assigns a dummy password based on an MD5 of the group name (see ln.932 of wmt14.views)
 

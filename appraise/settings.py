@@ -9,7 +9,7 @@ import os
 
 # Try to load ROOT_PATH from local settings, otherwise use default.
 try:
-    from local_settings import ROOT_PATH, DEPLOYMENT_PREFIX, DEBUG
+    from local_settings import ROOT_PATH, DEPLOYMENT_PREFIX, DEBUG, ALLOWED_HOSTS
 
 except ImportError:
     ROOT_PATH = os.getcwd()
@@ -79,7 +79,7 @@ DATABASES = {
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'Europe/Berlin'
+TIME_ZONE = 'America/Los_Angeles'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
