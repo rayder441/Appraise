@@ -46,7 +46,7 @@ from logging.handlers import RotatingFileHandler
 
 # Logging settings for this Django project.
 LOG_PATH = ROOT_PATH
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.WARNING
 LOG_FILENAME = os.path.join(LOG_PATH, 'appraise.log')
 LOG_FORMAT = "[%(asctime)s] %(name)s::%(levelname)s %(message)s"
 LOG_DATE = "%m/%d/%Y @ %H:%M:%S"
@@ -109,7 +109,8 @@ if DJANGO_VERSION[1] < 4:
 STATIC_ROOT = os.path.join(ROOT_PATH, 'static-files')
 
 # URL to use when referring to static files located in STATIC_ROOT.
-STATIC_URL = '/{0}files/'.format(DEPLOYMENT_PREFIX)
+#STATIC_URL = '/{0}files/'.format(DEPLOYMENT_PREFIX)
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
   os.path.join(ROOT_PATH, 'static'),
