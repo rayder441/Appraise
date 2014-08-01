@@ -18,6 +18,7 @@ import random
 import hashlib
 import argparse
 from ranking_task import RankingTask,Control
+from xml.sax.saxutils import escape
 
 PARSER = argparse.ArgumentParser(description="Build evaluation task input file.")
 PARSER.add_argument("source", type=file, help="source language file")
@@ -32,25 +33,47 @@ PARSER.add_argument("-tasksperhit", type=int, default=3, help="number of HITs in
 PARSER.add_argument("-systemspertask", type=int, default=5, help="number of systems to rerank")
 PARSER.add_argument("-redundancy", type=int, default=10, help="number of redundant HITs in the batch")
 PARSER.add_argument('-maxlen', type=int, default=30, help='maximum source sentence length')
+PARSER.add_argument('-min-index', dest='min_index', type=int, default=0, help='Minimum index from which to start sampling sentences')
 PARSER.add_argument('-seed', type=int, default=None, help='random seed')
 PARSER.add_argument('-no-sequential', dest='sequential', default=True, action='store_false', help='whether sentences within a HIT should be sequential')
 PARSER.add_argument('-controls', type=str, default=None, dest="controlFile", help='file containing controls to use (implies -no-sequential)')
 PARSER.add_argument('-control_prob', type=float, default=1.0, dest="control_prob", help='probability of inserting a control into a HIT')
 PARSER.add_argument('-save', type=str, default=None, dest="saveDir", help='directory to save reduced corpora to')
 
-def random_from_range(range_max, num_draws, tuple_size = 3, sequential = True):
+def random_from_range(range_max, num_draws, tuple_size = 3, sequential = True, min_index=0):
     """Returns a set of tuples (of size `size') of numbers, representing sentences to use in constructing a HIT. `range_max' is the number of sentences, `num_draws' is the number of HITs to create, `tuple_size' is the number of sentences in each HIT, and `sequential' indicates that we should draw sentences in block groups."""
     
     """Returns a set of 'num' unique integers from the range (0, max-1)."""
 
     blocks = []
     if sequential is True:
-        num_blocks = int(math.ceil(1.0 * range_max / tuple_size))
-        sentences = range(num_blocks)
-        random.shuffle(sentences)
-        blocks = [tuple(range(block, block + tuple_size)) for block in sentences]
+        block_grid = []
+        block_idx = -1
+        indices = range(min_index, range_max)
+        for i,index in enumerate(indices):
+            if i % tuple_size == 0 or len(block_grid) == 0:
+                block_idx += 1
+                block_grid.append([index])
+            else:
+                block_grid[block_idx].append(index)
+        # Stupid special case: make sure that each block has three
+        # sentences due to hardcoding in the wmt14 app. So just
+        # pick a random sentence to fill out the last item in
+        # the block
+        if len(block_grid[-1]) != 3:
+            random.shuffle(indices)
+            while len(block_grid[-1]) != 3:
+                block_grid[-1].append(indices.pop())
+        
+        indices = range(len(block_grid))
+        # Randomize the order in which raters see the blocks,
+        # but do not randomize the blocks themselves since Appraise
+        # expects 3 sentences per block. Otherwise we can't guarantee
+        # a clean partitioning into blocks of 3
+        random.shuffle(indices)
+        blocks = [tuple(block_grid[i]) for i in indices[0:num_draws]]
     else:
-        sentences = range(range_max)
+        sentences = range(min_index, range_max)
         random.shuffle(sentences)
         sys.stderr.write(str(num_draws) + ' ' + str(len(sentences)))
         blocks = [tuple([sentences.pop(random.randint(0, len(sentences) - 1)) for x in range(tuple_size) if len(sentences) > 0]) for x in range(num_draws)]
@@ -134,7 +157,7 @@ if __name__ == "__main__":
             dump_system(system.name, systems[i])
         dump_system('line_numbers', [x + 1 for x in eligible])
 
-    random_blocks = random_from_range(len(eligible), args.numhits - args.redundancy, tuple_size = args.tasksperhit, sequential = args.sequential)
+    random_blocks = random_from_range(len(eligible), args.numhits - args.redundancy, tuple_size = args.tasksperhit, sequential = args.sequential, min_index = args.min_index)
     hits = []
     for sentnos_tuple in random_blocks:
 
@@ -143,7 +166,7 @@ if __name__ == "__main__":
         random.shuffle(system_indexes)
         system_indexes = system_indexes[:args.systemspertask]
 
-        tasks = [RankingTask(eligible[id] + 1, source[eligible[id]], reference[eligible[id]], [system_names[sysid] for sysid in system_indexes], [systems[sysid][eligible[id]] for sysid in system_indexes]) for id in sentnos_tuple]
+        tasks = [RankingTask(eligible[id] + 1, escape(source[eligible[id]]), escape(reference[eligible[id]]), [system_names[sysid] for sysid in system_indexes], [escape(systems[sysid][eligible[id]]) for sysid in system_indexes]) for id in sentnos_tuple]
 
         # Randomly decided whether to randomly replace one of the tasks with a random control.  That
         # is, we roll a dice to see whether to insert a control (determined by
@@ -172,3 +195,4 @@ if __name__ == "__main__":
     for hit in hits:
         print hit
     print '</hits>'
+    sys.stderr.write('Wrote %d HITs%s' % (len(hits), os.linesep))
