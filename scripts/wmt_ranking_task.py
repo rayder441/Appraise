@@ -164,8 +164,20 @@ if __name__ == "__main__":
         # Randomize the selection of systems
         system_indexes = range(len(systems))
         random.shuffle(system_indexes)
-        system_indexes = system_indexes[:args.systemspertask]
-
+        sampled_indexes = []
+        for index in system_indexes:
+            if len(sampled_indexes) == args.systemspertask:
+                break
+            add_id = True
+            for sent_id in sentnos_tuple:
+                if len(systems[index][eligible[sent_id]].strip()) == 0:
+                    sys.stderr.write('Filtering sys %d id %d\n' % (index, sent_id))
+                    add_id = False
+                    break
+            if add_id:
+                sampled_indexes.append(index)
+        assert len(sampled_indexes) == args.systemspertask
+        system_indexes = sampled_indexes
         tasks = [RankingTask(eligible[id] + 1, escape(source[eligible[id]]), escape(reference[eligible[id]]), [system_names[sysid] for sysid in system_indexes], [escape(systems[sysid][eligible[id]]) for sysid in system_indexes]) for id in sentnos_tuple]
 
         # Randomly decided whether to randomly replace one of the tasks with a random control.  That
