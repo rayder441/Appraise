@@ -5,8 +5,8 @@ DATADIR=/home/rayder441/sandbox/data/mt/ptm/uist14/full
 DRYRUN=
 
 # Fr-En setup
-FREN=$DATADIR/fren/analysis/translations/appraise
-for file in $(ls $FREN/*extra.hits); do
+ENDE=$DATADIR/ende/analysis/translations/appraise
+for file in $(ls $ENDE/*extra.hits); do
     echo $file
     python import_wmt14_xml.py $DRYRUN $file
 done
